@@ -52,7 +52,8 @@ def process_dataframe(df: pd.DataFrame, gas_name: str) -> pd.DataFrame:
     df = df[df["Макс раз знач (в ПДКмр)"] > 1.00]
     
     # Добавление категории станции
-    df["Категория"] = df["Станция"].apply(lambda x: "МО" if str(x).startswith("МО") else "Москва")
+    mo_stations = ["МО", "Звенигород", "Балашиха-Салтыковка", "Реутов-2", "М (Балашиха-Речная)"]
+    df["Категория"] = df["Станция"].apply(lambda x: "МО" if any(x.startswith(station) for station in mo_stations) else "Москва")
     
     return df[required_columns + ["Категория"]]
 
@@ -70,7 +71,7 @@ def main(directory: str) -> Dict[str, Any]:
 
 if __name__ == "__main__":
     # Пример использования
-    input_directory = "path/to/excel/files"
+    input_directory = "C:/Users/HUAWEI/Desktop/eco_detector/data/part1"
     result = main(input_directory)
     print(f"Обработано газов: {list(result.keys())}")
     for gas, df in result.items():
