@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import logging
 from typing import Dict, Any
+import re
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -35,7 +36,8 @@ def read_excel_files(directory: str) -> Dict[str, pd.DataFrame]:
 
 def process_dataframe(df: pd.DataFrame, gas_name: str) -> pd.DataFrame:
     """
-    Обрабатывает DataFrame: фильтрует данные и добавляет категорию станции.
+    Обрабатывает DataFrame: фильтрует данные, добавляет категорию станции 
+    и упрощает названия станций.
     
     :param df: Исходный DataFrame
     :param gas_name: Название газа (имя файла)
@@ -55,7 +57,21 @@ def process_dataframe(df: pd.DataFrame, gas_name: str) -> pd.DataFrame:
     mo_stations = ["МО", "Звенигород", "Балашиха-Салтыковка", "Реутов-2", "М (Балашиха-Речная)"]
     df["Категория"] = df["Станция"].apply(lambda x: "МО" if any(x.startswith(station) for station in mo_stations) else "Москва")
     
+    # Упрощение названий станций
+    df["Станция"] = df["Станция"].apply(lambda x: simplify_station_name(x))
+    
     return df[required_columns + ["Категория"]]
+
+def simplify_station_name(station_name: str) -> str:
+    """
+    Упрощает название станции, удаляя ненужные скобки и их содержимое.
+    
+    :param station_name: Исходное название станции
+    :return: Упрощенное название станции
+    """
+
+    station_name = re.sub(r'\s*\([СЖСА]?\)\s*', '', station_name) # Удаляем (С), (Ж), (А), (Сп), () 
+    return station_name
 
 def main(directory: str) -> Dict[str, Any]:
     """

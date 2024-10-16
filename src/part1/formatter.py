@@ -5,22 +5,21 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 def format_data(analysis_results: Dict[str, Any]) -> str:
     """
-    Форматирует результаты анализа в строку с тегами форматирования.
-    
+    Форматирует результаты анализа в строку.
+
     :param analysis_results: Словарь с результатами анализа
     :return: Отформатированная строка
     """
-    formatted_output = "<b>Превышения ПДКмр:</b>\n"
+    formatted_output = "Превышения ПДКмр:\n"
+
 
     for category in ["Москва", "МО"]:
-        formatted_output += f"<i>{category}</i>\n"
+        formatted_output += f"{category}\n"
         category_data = []
 
         for gas, data in analysis_results.items():
             if data[category] != "нет превышений":
-                gas_data = format_gas_data(gas, data[category])
-                if gas_data:
-                    category_data.append(gas_data)
+                category_data.append(f"по {gas} {data[category]}")
 
         if category_data:
             formatted_output += "\n".join(category_data) + "\n"
@@ -29,27 +28,6 @@ def format_data(analysis_results: Dict[str, Any]) -> str:
 
     return formatted_output.strip()
 
-def format_gas_data(gas: str, data: str) -> str:
-    """
-    Форматирует данные для конкретного газа.
-    
-    :param gas: Название газа
-    :param data: Данные о превышениях для газа
-    :return: Отформатированная строка для газа
-    """
-    lines = data.split('\n')
-    station_count = lines[0].split(':')[0].split()[-2]
-    formatted_gas = f"<b>по {gas} на {station_count} АСКЗА:</b>\n"
-
-    for line in lines[1:]:
-        parts = line.split(' ', 5)  # Разделяем строку на 6 частей
-        pdkmr = parts[1]
-        time = parts[3]
-        date = parts[4]
-        station = parts[5].strip('()')  # Убираем скобки вокруг названия станции
-        formatted_gas += f"<b>до {pdkmr} ПДКмр</b> {time} {date} {station}),\n"
-
-    return formatted_gas.rstrip(',\n') + ';'
 
 def main(analysis_results: Dict[str, Any]) -> str:
     """
