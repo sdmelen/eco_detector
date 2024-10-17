@@ -20,7 +20,7 @@ def merge_documents(doc1_path, doc2_path, output_path):
 def main():
     # Пути к директориям с данными
     input_directory_part1 = "C:/Users/HUAWEI/Desktop/eco_detector/data/part1"
-    input_directory_part2 = "C:/Users/HUAWEI/Desktop/eco_detector/data/part2"
+    input_directory_part2 = "C:/Users/HUAWEI/Desktop/eco_detector/data/part2/"
     
     # Обработка первой части
     output_file_part1 = "output.docx"

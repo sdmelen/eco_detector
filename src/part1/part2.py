@@ -127,7 +127,7 @@ def process_multiple_files(path, file_names, document):
 
 def main():
     """Основная функция для выполнения всех операций."""
-    path = "/Users/admin/python/eco_detector/data/part2/"
+    path = "C:/Users/HUAWEI/Desktop/eco_detector/data/part2/"
 
     document = process_part2(path)
     document.save('result.docx')
