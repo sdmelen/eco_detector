@@ -2,6 +2,8 @@ import pandas as pd
 from docx.shared import Pt
 from docx import Document
 from datetime import datetime, timedelta
+import logging
+import os
 
 
 def format_datetime_range(start_str, end_str, minutes_to_subtract):
@@ -133,7 +135,8 @@ def main():
     document.save('result.docx')
 
 
-def process_part2(directory_name):
+def process_part2(directory_name, output_file='result.docx'):
+    logging.info(f"Начало обработки part2 с входной директорией {directory_name}")
     document = Document()
     file_names = [
         'CO_п',
@@ -143,8 +146,20 @@ def process_part2(directory_name):
         'H2S_период'
     ]
     process_multiple_files(directory_name, file_names, document)
-    return document
+    
+    # Сохранение документа
+    document.save(output_file)
+    logging.info(f"Документ Word сохранен: {output_file}")
+    logging.info(f"Файл {output_file} создан: {os.path.exists(output_file)}")
+    
+    return output_file
 
+def main():
+    """Основная функция для выполнения всех операций."""
+    path = "C:/Users/HUAWEI/Desktop/eco_detector/data/part2/"
+    output_file = process_part2(path)
+    logging.info(f"Обработка part2 завершена. Результат сохранен в {output_file}")
 
 if __name__ == "__main__":
     main()
+

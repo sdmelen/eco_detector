@@ -8,7 +8,7 @@ from writer import main as write_document
 # Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def process_part1(input_directory):
+def process_part1(input_directory, output_file='output.docx'):
     # Проверка существования директории
     if not os.path.exists(input_directory):
         logging.error(f"Директория не найдена: {input_directory}")
@@ -32,10 +32,6 @@ def process_part1(input_directory):
     logging.info("Начало форматирования данных")
     formatted_results = format_data(analysis_results)
     logging.info("Форматирование данных завершено")
-
-    # Вывод отформатированных результатов
-    print("\nОтформатированные результаты:")
-    print(formatted_results)
 
     # Запись результатов в документ
     output_file = "output.docx"
