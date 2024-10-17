@@ -9,8 +9,8 @@ from writer import main as write_document  # Будет использовать
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def main():
-    # Путь к директории с Excel файлами
-    input_directory = "C:/Users/HUAWEI/Desktop/eco_detector/data/part1"  # Убедитесь, что путь корректен
+    # Путь к директории с Excel файлами УКАЖИТЕ ПУТЬ
+    input_directory = "C:/Users/HUAWEI/Desktop/eco_detector/data/part1"
     
     # Проверка существования директории
     if not os.path.exists(input_directory):

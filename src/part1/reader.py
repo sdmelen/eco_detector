@@ -84,12 +84,3 @@ def main(directory: str) -> Dict[str, Any]:
     data = read_excel_files(directory)
     logging.info(f"Обработка завершена. Прочитано {len(data)} файлов.")
     return data
-
-if __name__ == "__main__":
-    # Пример использования
-    input_directory = "C:/Users/HUAWEI/Desktop/eco_detector/data/part1"
-    result = main(input_directory)
-    print(f"Обработано газов: {list(result.keys())}")
-    for gas, df in result.items():
-        print(f"\n{gas}:")
-        print(df.head())
