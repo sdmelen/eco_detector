@@ -9,7 +9,7 @@ gas_names = {
     "H2S": "сероводороду",
     "NO": "оксиду азота",
     "NO2": "диоксиду азота",
-    "PM10": "PM10"
+    "PM10": "PM₁₀"
 }
 
 def format_data(analysis_results: Dict[str, Any]) -> str:
