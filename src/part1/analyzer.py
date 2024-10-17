@@ -107,21 +107,3 @@ def main(data_dict: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
     formatted_results = format_results(analysis_results)
     logging.info("Анализ данных завершен")
     return formatted_results
-
-if __name__ == "__main__":
-    # Пример использования
-    sample_data = {
-        "CO": pd.DataFrame({
-            "Макс раз знач (в ПДКмр)": [4.5, 1.0, 2.1, 1.8, 1.5],
-            "Макс раз знач (дата и вр)": ["18/09/2024 22:40", "18/09/2024 08:20", "18/09/2024 08:20", 
-                                          "18/09/2024 23:20", "18/09/2024 08:20"],
-            "Станция": ["Гурьянова", "Жулебино", "Головачева", "Долгопрудная", "Шаболовка"],
-            "Категория": ["Москва", "Москва", "Москва", "Москва", "Москва"]
-        })
-    }
-    
-    result = main(sample_data)
-    for gas, categories in result.items():
-        print(f"\nРезультаты для {gas}:")
-        for category, data in categories.items():
-            print(f"  {category}:\n    {data}")

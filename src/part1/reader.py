@@ -72,15 +72,3 @@ def simplify_station_name(station_name: str) -> str:
 
     station_name = re.sub(r'\s*\([СЖСА]?\)\s*', '', station_name) # Удаляем (С), (Ж), (А), (Сп), () 
     return station_name
-
-def main(directory: str) -> Dict[str, Any]:
-    """
-    Основная функция для чтения и обработки Excel файлов.
-    
-    :param directory: Путь к директории с Excel файлами
-    :return: Словарь с обработанными данными
-    """
-    logging.info(f"Начало обработки файлов в директории: {directory}")
-    data = read_excel_files(directory)
-    logging.info(f"Обработка завершена. Прочитано {len(data)} файлов.")
-    return data

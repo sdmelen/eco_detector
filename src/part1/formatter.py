@@ -50,19 +50,3 @@ def main(analysis_results: Dict[str, Any]) -> str:
     formatted_output = format_data(analysis_results)
     logging.info("Форматирование данных завершено")
     return formatted_output
-
-if __name__ == "__main__":
-    # Пример использования
-    sample_results = {
-        "H2S": {
-            "Москва": "на 2 АСКЗА:\nдо 4.5 ПДКмр в 01:00 19.09.2024 (Гурьянова),\nдо 2.9 ПДКмр в 08:20 18.09.2024 (Жулебино)",
-            "МО": "нет превышений"
-        },
-        "CO": {
-            "Москва": "на 1 АСКЗА:\nдо 1.1 ПДКмр в 22:40 18.09.2024 (Жулебино)",
-            "МО": "нет превышений"
-        }
-    }
-    
-    formatted_output = main(sample_results)
-    print(formatted_output)
