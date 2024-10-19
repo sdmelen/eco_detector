@@ -1,9 +1,14 @@
+#Программа предназначена для создания форматированной справки из данных АСКЗА в формате Excel для нужд экомониторинга
+
 **Pyhton 3.10**
 
-cd src/part1
-pip install -r requirements.txt
-python main.py
+На ПК должен быть установлен python
 
-Укажите input_directory = "путь до папки/data/part1" 
 
-Файл будет назван *output.txt*
+Инструкция:
+1. Положить файлы с превышениями в data/part1
+2. С длительностями в data/part2
+3. Открыть терминал и перейти в папку eco_detector\src (cd eco_detector\src)
+4. Запустить команду pip install -r requirements.txt
+5. Запустить команду python main.py
+6. Выходной файл будет там же eco_detector\src и называться справка.docx
