@@ -1,9 +1,41 @@
 import pandas as pd
+pd.options.mode.chained_assignment = None
 import logging
 from typing import Dict, Any
 from datetime import datetime
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def custom_round(value: float) -> float:
+    """
+    Округляет значение до одного знака после запятой с особым правилом:
+    если второй знак после запятой >= 5, округляем вверх
+    
+    :param value: Исходное значение
+    :return: Округленное значение
+    """
+    # Переводим в строку для точной работы с десятичными знаками
+    str_value = f"{value:.3f}"  # Берём 3 знака после запятой для точности
+    parts = str_value.split('.')
+    
+    if len(parts) == 2:
+        whole = int(parts[0])
+        decimals = parts[1]
+        
+        if len(decimals) >= 2:
+            first_decimal = int(decimals[0])
+            second_decimal = int(decimals[1])
+            
+            # Если второй знак >= 5, увеличиваем первый знак
+            if second_decimal >= 5:
+                first_decimal += 1
+                if first_decimal == 10:
+                    first_decimal = 0
+                    whole += 1
+                    
+            return float(f"{whole}.{first_decimal}")
+    
+    return value
 
 def analyze_data(data_dict: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
     results = {}
@@ -22,7 +54,7 @@ def parse_datetime(date_string: str) -> datetime:
     raise ValueError(f"Не удалось распознать формат даты: {date_string}")
 
 def analyze_gas_data(df: pd.DataFrame) -> Dict[str, Any]:
-    categories = ["Москва", "МО"]
+    categories = ["Москва", "Московская область"]
     gas_results = {}
 
     for category in categories:
@@ -34,6 +66,9 @@ def analyze_gas_data(df: pd.DataFrame) -> Dict[str, Any]:
                 "превышения": []
             }
         else:
+            # Применяем новое округление к значениям ПДКмр
+            category_df["Макс раз знач (в ПДКмр)"] = category_df["Макс раз знач (в ПДКмр)"].apply(custom_round)
+            
             # Сортировка по убыванию значения ПДКмр
             category_df = category_df.sort_values("Макс раз знач (в ПДКмр)", ascending=False)
 
@@ -42,7 +77,7 @@ def analyze_gas_data(df: pd.DataFrame) -> Dict[str, Any]:
             current_stations = []
 
             for _, row in category_df.iterrows():
-                pdkmr = round(float(row["Макс раз знач (в ПДКмр)"]), 1)
+                pdkmr = float(row["Макс раз знач (в ПДКмр)"])
                 
                 try:
                     date_time = parse_datetime(row["Макс раз знач (дата и вр)"])
@@ -82,7 +117,7 @@ def format_results(results: Dict[str, Any]) -> Dict[str, Any]:
     for gas, data in results.items():
         formatted_results[gas] = {
             "Москва": format_category_data(data["Москва"]),
-            "МО": format_category_data(data["МО"])
+            "Московская область": format_category_data(data["Московская область"])
         }
 
     return formatted_results

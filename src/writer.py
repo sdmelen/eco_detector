@@ -32,9 +32,10 @@ def create_word_document(formatted_results: str, output_file: str):
         if line == "Превышения ПДКмр:":  # Делаем заголовок жирным
             run = p.add_run(line)
             run.bold = True
-        elif line in ("Москва", "МО"):
+        elif line in ("Москва", "Московская область"):
             run = p.add_run(line)
             run.italic = True
+            run.bold = True
         else:
             # Проверяем, является ли строка подзаголовком с "по {вещество} на"
             if line.startswith("по ") and " АСКЗА:" in line: 

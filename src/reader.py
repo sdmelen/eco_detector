@@ -7,6 +7,38 @@ import re
 # Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+def simplify_station_name(station_name: str) -> str:
+    """
+    Упрощает название станции, обрабатывая специальные случаи и удаляя ненужные обозначения.
+    
+    :param station_name: Исходное название станции
+    :return: Упрощенное название станции
+    """
+    # Словарь специальных случаев
+    special_cases = {
+        "М2 (Жулебино) (С)": "Жулебино",
+        "М1 (Очаковское) (С)": "Очаковское",
+        "М (Балашиха-Речная) ()": "Балашиха-Речная",
+        "МКАД 105 восток (Сп)": "МКАД 105 восток",
+        "МКАД 52 запад (Сп)": "МКАД 52 запад"
+    }
+
+    # Проверяем, является ли станция специальным случаем
+    if station_name in special_cases:
+        return special_cases[station_name]
+
+    # Общая обработка для остальных случаев
+    # Удаляем обозначения в скобках: (С), (Ж), (А), (Сп), ()
+    station_name = re.sub(r'\s*\([СЖСА]?п?\)\s*', '', station_name)
+    
+    # Удаляем пустые скобки
+    station_name = re.sub(r'\s*\(\)\s*', '', station_name)
+    
+    # Если название начинается с "М1 " или "М2 ", удаляем эту часть
+    station_name = re.sub(r'^М[12]?\s+\(([^)]+)\)', r'\1', station_name)
+
+    return station_name.strip()
+
 def read_excel_files(directory: str) -> Dict[str, pd.DataFrame]:
     """
     Читает все Excel файлы в указанной директории и возвращает словарь с обработанными данными.
@@ -69,21 +101,11 @@ def process_dataframe(df: pd.DataFrame, gas_name: str) -> pd.DataFrame:
     # Фильтрация данных
     df = df[df["Макс раз знач (в ПДКмр)"] > 1.00]
     
-    # Добавление категории станции
+    # Добавление категории станции и упрощение названий
     mo_stations = ["МО", "Звенигород", "Балашиха-Салтыковка", "Реутов-2", "М (Балашиха-Речная)"]
-    df["Категория"] = df["Станция"].apply(lambda x: "МО" if any(station in x for station in mo_stations) else "Москва")
+    df["Категория"] = df["Станция"].apply(lambda x: "Московская область" if any(station in x for station in mo_stations) else "Москва")
     
     # Упрощение названий станций
     df["Станция"] = df["Станция"].apply(lambda x: simplify_station_name(x))
     
     return df[required_columns + ["Категория"]]
-
-def simplify_station_name(station_name: str) -> str:
-    """
-    Упрощает название станции, удаляя ненужные скобки и их содержимое.
-    
-    :param station_name: Исходное название станции
-    :return: Упрощенное название станции
-    """
-    station_name = re.sub(r'\s*\([СЖСА]?\)\s*', '', station_name)
-    return station_name

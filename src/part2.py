@@ -18,11 +18,11 @@ def format_datetime_range(start_str, end_str, minutes_to_subtract):
 
     if adjusted_start.date() == original_end.date():
         date_str = adjusted_start.strftime("%d.%m.%Y")
-        return f"с {start_time_str} по {end_time_str} {date_str}"
+        return f"с {start_time_str} до {end_time_str} {date_str}"
     else:
         start_date_str = adjusted_start.strftime("%d.%m.%Y")
         end_date_str = original_end.strftime("%d.%m.%Y")
-        return f"с {start_time_str} {start_date_str} по {end_time_str} {end_date_str}"
+        return f"с {start_time_str} {start_date_str} до {end_time_str} {end_date_str}"
 
 def get_duration_string(total_minutes):
     """Возвращает строку длительности в часах и минутах с правильным склонением."""
@@ -50,14 +50,16 @@ def get_duration_string(total_minutes):
 
     return f"{hours_str} {minutes_str}".strip()
 
-def add_paragraph_to_document(document, gas_name, duration_str, details):
-    """Добавляет абзац в документ с заданными параметрами."""
+def add_paragraph_to_document(document, gas_name, duration_str, details, is_last=False):
+    """Добавляет абзац в документ с заданными параметрами и правильной пунктуацией."""
     paragraph = document.add_paragraph()
-    run = paragraph.add_run(f"по {gas_name} – {duration_str} {details}")
+    # Добавляем точку с запятой или точку в зависимости от того, последняя ли это запись
+    ending = "." if is_last else ";"
+    run = paragraph.add_run(f"по {gas_name} – {duration_str} {details}{ending}")
     run.font.name = 'Times New Roman'
     run.font.size = Pt(14)
 
-def record_max_excess_duration(path, file_name, document, gas_names):
+def record_max_excess_duration(path, file_name, document, gas_names, is_last=False):
     """Находит строки с максимальным количеством точек и записывает результаты в одну строку в документ."""
     try:
         df = pd.read_excel(f"{path}{file_name}.xlsx")
@@ -73,13 +75,12 @@ def record_max_excess_duration(path, file_name, document, gas_names):
         formatted_range = format_datetime_range(first_line[3], first_line[4], 20)
         details = f"{formatted_range} ({stations_str})"
 
-        add_paragraph_to_document(document, gas_names[file_name], duration_str, details)
-    except FileNotFoundError:
-        logging.warning(f"Файл {file_name}.xlsx не найден в директории {path}")
+        add_paragraph_to_document(document, gas_names[file_name], duration_str, details, is_last)
     except Exception as e:
         logging.error(f"Ошибка при обработке файла {file_name}.xlsx: {str(e)}")
+        raise
 
-def record_total_excess_duration(path, file_name, document, gas_names):
+def record_total_excess_duration(path, file_name, document, gas_names, is_last=False):
     """Находит суммарную длительность превышений для каждой точки и записывает результаты в одну строку в документ."""
     try:
         df = pd.read_excel(f"{path}{file_name}.xlsx")
@@ -93,11 +94,10 @@ def record_total_excess_duration(path, file_name, document, gas_names):
         duration_str = get_duration_string(total_duration_minutes)
         details = f"({stations_str})"
 
-        add_paragraph_to_document(document, gas_names[file_name], duration_str, details)
-    except FileNotFoundError:
-        logging.warning(f"Файл {file_name}.xlsx не найден в директории {path}")
+        add_paragraph_to_document(document, gas_names[file_name], duration_str, details, is_last)
     except Exception as e:
         logging.error(f"Ошибка при обработке файла {file_name}.xlsx: {str(e)}")
+        raise
 
 def add_custom_text(document, text, font_name='Times New Roman', font_size=14, bold=False):
     """Добавляет заголовок с указанным шрифтом, размером и жирным стилем."""
@@ -119,7 +119,7 @@ def process_multiple_files(path, document):
     """Обрабатывает доступные файлы и записывает результаты в один документ."""
     gas_names = {
         "CO_п": "оксиду углерода",
-        "H2S_период": "сероводороду",
+        "H2S_п": "сероводороду",
         "NO_п": "оксиду азота",
         "NO2_п": "диоксиду азота",
         "PM10_п": "PM₁₀",
@@ -140,13 +140,24 @@ def process_multiple_files(path, document):
 
     add_custom_text(document, 'Максимальная непрерывная длительность превышений:', 
                     font_name='Times New Roman', font_size=14, bold=True)
-    for file_name in available_files:
-        record_max_excess_duration(path, file_name, document, gas_names)
+    for i, file_name in enumerate(available_files):
+        is_last = (i == len(available_files) - 1)
+        try:
+            record_max_excess_duration(path, file_name, document, gas_names, is_last)
+        except Exception as e:
+            logging.error(f"Ошибка при обработке файла {file_name}: {str(e)}")
+            continue
 
+    # Максимальная общая длительность
     add_custom_text(document, 'Максимальная общая длительность превышений:', 
                     font_name='Times New Roman', font_size=14, bold=True)
-    for file_name in available_files:
-        record_total_excess_duration(path, file_name, document, gas_names)
+    for i, file_name in enumerate(available_files):
+        is_last = (i == len(available_files) - 1)
+        try:
+            record_total_excess_duration(path, file_name, document, gas_names, is_last)
+        except Exception as e:
+            logging.error(f"Ошибка при обработке файла {file_name}: {str(e)}")
+            continue
 
 def process_part2(directory_name, output_file='result.docx'):
     logging.info(f"Начало обработки part2 с входной директорией {directory_name}")
