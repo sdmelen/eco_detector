@@ -134,7 +134,7 @@ def format_category_data(category_data: Dict[str, Any]) -> str:
         else:
             превышения_str.append(f"до {п['пдкмр']:.1f} ПДКмр " + ", ".join(п['станции']))
 
-    return f"на {category_data['количество_станций']} АСКЗА:\n" + "\n".join(превышения_str)
+    return f"на {category_data['количество_станций']} АСКЗА\n" + "\n".join(превышения_str)
 
 def main(data_dict: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
     logging.info("Начало анализа данных")

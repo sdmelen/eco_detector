@@ -17,7 +17,7 @@ def merge_documents(doc1_path, doc2_path, output_path):
     doc1 = Document(doc1_path)
     doc2 = Document(doc2_path)
 
-    doc1.add_page_break()
+    #doc1.add_page_break()
 
     for element in doc2.element.body:
         doc1.element.body.append(element)

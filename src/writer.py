@@ -19,11 +19,14 @@ def create_word_document(formatted_results: str, output_file: str):
     style_normal = styles['Normal']
     style_normal.font.name = 'Times New Roman'
     style_normal.font.size = Pt(14)
+    style_normal.paragraph_format.space_after = Pt(0)
+    style_normal.paragraph_format.space_before = Pt(0)
 
     # Добавление заголовка
     title = doc.add_paragraph()
     title_run = title.add_run("Данные АСКЗА")
     title_run.bold = True
+    title_run.underline = True
     title_run.font.size = Pt(14)
     title.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
 

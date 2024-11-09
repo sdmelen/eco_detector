@@ -51,11 +51,12 @@ def get_duration_string(total_minutes):
     return f"{hours_str} {minutes_str}".strip()
 
 def add_paragraph_to_document(document, gas_name, duration_str, details, is_last=False):
-    """Добавляет абзац в документ с заданными параметрами и правильной пунктуацией."""
+    """Добавляет абзац в документ с заданными параметрами."""
     paragraph = document.add_paragraph()
-    # Добавляем точку с запятой или точку в зависимости от того, последняя ли это запись
+    paragraph.paragraph_format.space_after = Pt(0)
+    paragraph.paragraph_format.space_before = Pt(0)
     ending = "." if is_last else ";"
-    run = paragraph.add_run(f"по {gas_name} – {duration_str} {details}{ending}")
+    run = paragraph.add_run(f"по {gas_name} – {details}{ending}")
     run.font.name = 'Times New Roman'
     run.font.size = Pt(14)
 
@@ -63,45 +64,81 @@ def record_max_excess_duration(path, file_name, document, gas_names, is_last=Fal
     """Находит строки с максимальным количеством точек и записывает результаты в одну строку в документ."""
     try:
         df = pd.read_excel(f"{path}{file_name}.xlsx")
-        max_points = df['Количество точек'].max()
-        max_excess_rows = df[df['Количество точек'] == max_points].values.tolist()
+        
+        # Добавляем определение региона
+        mo_stations = ["МО", "Звенигород", "Балашиха-Салтыковка", "Реутов-2", "М (Балашиха-Речная)"]
+        df["Регион"] = df.iloc[:, 0].apply(
+            lambda x: "Московская область" if any(station in x for station in mo_stations) else "Москва"
+        )
 
-        station_names = [line[0] for line in max_excess_rows]
-        stations_str = ', '.join(station_names)
+        details_parts = []
+        
+        for region in ["Москва", "Московская область"]:
+            region_df = df[df["Регион"] == region]
+            if not region_df.empty:
+                max_points = region_df['Количество точек'].max()
+                max_excess_rows = region_df[region_df['Количество точек'] == max_points].values.tolist()
 
-        first_line = max_excess_rows[0]
-        duration_minutes = int(first_line[2]) * 20
-        duration_str = get_duration_string(duration_minutes)
-        formatted_range = format_datetime_range(first_line[3], first_line[4], 20)
-        details = f"{formatted_range} ({stations_str})"
+                station_names = [line[0] for line in max_excess_rows]
+                stations_str = ', '.join(station_names)
 
-        add_paragraph_to_document(document, gas_names[file_name], duration_str, details, is_last)
+                first_line = max_excess_rows[0]
+                duration_minutes = int(first_line[2]) * 20
+                duration_str = get_duration_string(duration_minutes)
+                formatted_range = format_datetime_range(first_line[3], first_line[4], 20)
+                
+                details_parts.append(f"{duration_str} {formatted_range} ({stations_str})")
+
+        if details_parts:
+            details = ", ".join(details_parts)
+            add_paragraph_to_document(document, gas_names[file_name], details_parts[0], details, is_last)
+            
+    except FileNotFoundError:
+        logging.warning(f"Файл {file_name}.xlsx не найден в директории {path}")
     except Exception as e:
         logging.error(f"Ошибка при обработке файла {file_name}.xlsx: {str(e)}")
-        raise
 
 def record_total_excess_duration(path, file_name, document, gas_names, is_last=False):
     """Находит суммарную длительность превышений для каждой точки и записывает результаты в одну строку в документ."""
     try:
         df = pd.read_excel(f"{path}{file_name}.xlsx")
-        points_map = df.groupby(df.columns[0])['Количество точек'].sum().to_dict()
-        max_value = max(points_map.values())
+        
+        # Добавляем определение региона
+        mo_stations = ["МО", "Звенигород", "Балашиха-Салтыковка", "Реутов-2", "М (Балашиха-Речная)"]
+        df["Регион"] = df.iloc[:, 0].apply(
+            lambda x: "Московская область" if any(station in x for station in mo_stations) else "Москва"
+        )
 
-        max_keys = [key for key, value in points_map.items() if value == max_value]
-        stations_str = ', '.join(max_keys)
+        details_parts = []
+        
+        for region in ["Москва", "Московская область"]:
+            region_df = df[df["Регион"] == region]
+            if not region_df.empty:
+                points_map = region_df.groupby(region_df.columns[0])['Количество точек'].sum().to_dict()
+                max_value = max(points_map.values())
 
-        total_duration_minutes = max_value * 20
-        duration_str = get_duration_string(total_duration_minutes)
-        details = f"({stations_str})"
+                max_keys = [key for key, value in points_map.items() if value == max_value]
+                stations_str = ', '.join(max_keys)
 
-        add_paragraph_to_document(document, gas_names[file_name], duration_str, details, is_last)
+                total_duration_minutes = max_value * 20
+                duration_str = get_duration_string(total_duration_minutes)
+                
+                details_parts.append(f"{duration_str} ({stations_str})")
+
+        if details_parts:
+            details = ", ".join(details_parts)
+            add_paragraph_to_document(document, gas_names[file_name], details_parts[0], details, is_last)
+
+    except FileNotFoundError:
+        logging.warning(f"Файл {file_name}.xlsx не найден в директории {path}")
     except Exception as e:
         logging.error(f"Ошибка при обработке файла {file_name}.xlsx: {str(e)}")
-        raise
 
 def add_custom_text(document, text, font_name='Times New Roman', font_size=14, bold=False):
     """Добавляет заголовок с указанным шрифтом, размером и жирным стилем."""
     heading = document.add_paragraph()
+    heading.paragraph_format.space_after = Pt(0)
+    heading.paragraph_format.space_before = Pt(0)
     run = heading.add_run(text)
     run.font.name = font_name
     run.font.size = Pt(font_size)
